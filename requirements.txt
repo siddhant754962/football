@@ -1,8 +1,10 @@
-streamlit==1.6.1
+streamlit
 pandas
 numpy
 scikit-learn
 joblib
 plotly
 matplotlib
+xgboost==1.7.6
+shap==0.41.0
 
