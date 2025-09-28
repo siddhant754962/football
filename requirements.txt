@@ -2,10 +2,7 @@ streamlit==1.6.1
 pandas
 numpy
 scikit-learn
-xgboost
 joblib
-shap
 plotly
 matplotlib
-pyyaml
-typing-extensions
+
