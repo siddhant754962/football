@@ -266,7 +266,7 @@ load_css()
 def load_resources():
     try:
         model = joblib.load("football_injury_model.pkl")
-        scaler = joblib.load(scaler.pkl")
+        scaler = joblib.load("scaler.pkl")
         explainer = shap.TreeExplainer(model)
         return model, scaler, explainer
     except FileNotFoundError:
