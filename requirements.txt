@@ -5,6 +5,7 @@ scikit-learn
 xgboost
 plotly
 shap
+matplotlib
 
 
 
