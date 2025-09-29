@@ -1,8 +1,13 @@
 streamlit
-numpy
 pandas
-scikit-learn==1.6.1
+numpy==1.23.5
+scikit-learn
+xgboost
 joblib
-requests
+shap==0.41.0
 plotly
+matplotlib
+pyyaml
+typing-extensions
+
 
