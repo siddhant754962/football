@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import shap
 import time
 from datetime import datetime
+import numpy as np # Import numpy
 
 # -----------------------------
 # Page Configuration
@@ -46,44 +47,30 @@ def football_animation_component():
         const canvas = document.getElementById('footballAnimation');
         const ctx = canvas.getContext('2d');
 
-        // Set canvas size to its container's size
         function resizeCanvas() {
             let parent = canvas.parentElement;
             canvas.width = parent.clientWidth;
-            canvas.height = 400; // Fixed height for consistency
+            canvas.height = 400; 
         }
         
         resizeCanvas();
 
         const groundLevel = canvas.height - 40;
 
-        // Ball properties
         let ball = {
-            x: 85,
-            y: groundLevel - 12,
-            radius: 10,
-            dx: 0,
-            dy: 0,
-            gravity: 0.3,
-            rotation: 0,
-            isKicked: false
+            x: 85, y: groundLevel - 12, radius: 10, dx: 0, dy: 0,
+            gravity: 0.3, rotation: 0, isKicked: false
         };
 
-        // Player properties
         let player = {
-            x: 50,
-            y: groundLevel,
-            width: 20,
-            height: 50,
-            speed: 1.5,
-            runFrame: 0,
-            isKicking: false
+            x: 50, y: groundLevel, width: 20, height: 50,
+            speed: 1.5, runFrame: 0, isKicking: false
         };
 
         function drawField() {
-            ctx.fillStyle = '#228B22'; // ForestGreen
+            ctx.fillStyle = '#228B22'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#87CEEB'; // SkyBlue
+            ctx.fillStyle = '#87CEEB'; 
             ctx.fillRect(0, 0, canvas.width, groundLevel - 20);
             ctx.fillStyle = '#228B22';
             ctx.fillRect(0, groundLevel - 20, canvas.width, canvas.height - 20);
@@ -99,32 +86,24 @@ def football_animation_component():
             const p = player;
             ctx.strokeStyle = '#FFFFFF';
             ctx.lineWidth = 3;
-
-            // Head
             ctx.beginPath();
             ctx.arc(p.x, p.y - p.height, 8, 0, Math.PI * 2);
             ctx.fillStyle = '#FFFFFF';
             ctx.fill();
-            
-            // Body
             ctx.beginPath();
             ctx.moveTo(p.x, p.y - p.height + 8);
             ctx.lineTo(p.x, p.y - 15);
             ctx.stroke();
-
-            // Kicking animation
             if (p.isKicking) {
-                // Kicking leg forward
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
                 ctx.lineTo(p.x + 15, p.y - 10);
                 ctx.stroke();
-                // Other leg back
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
                 ctx.lineTo(p.x - 10, p.y - 2);
                 ctx.stroke();
-            } else { // Running animation
+            } else { 
                 let legAngle = Math.sin(p.runFrame * 0.3) * 0.6;
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
@@ -138,8 +117,6 @@ def football_animation_component():
         function updatePlayerAndBall() {
             player.x += player.speed;
             player.runFrame += 1;
-
-            // Logic for kicking
             if (player.x > ball.x - 30 && !ball.isKicked) {
                 player.isKicking = true;
                 ball.isKicked = true;
@@ -148,32 +125,25 @@ def football_animation_component():
             } else {
                 player.isKicking = false;
             }
-            
-            // Update ball position if kicked
             if (ball.isKicked) {
                 ball.dy += ball.gravity;
                 ball.x += ball.dx;
                 ball.y += ball.dy;
                 ball.rotation += ball.dx * 0.1;
-
-                // Bounce
                 if (ball.y + ball.radius > groundLevel) {
                     ball.y = groundLevel - ball.radius;
                     ball.dy *= -0.6;
                     ball.dx *= 0.8;
                 }
             } else {
-                 ball.x = player.x + 35;
-                 ball.y = groundLevel - ball.radius;
+               ball.x = player.x + 35;
+               ball.y = groundLevel - ball.radius;
             }
-            
-            // Reset loop
             if (player.x > canvas.width + player.width) {
                 player.x = -player.width;
                 ball.isKicked = false;
             }
         }
-
 
         function drawBall() {
             ctx.save();
@@ -229,30 +199,52 @@ def load_css():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
         
+        /* --- GLOBAL STYLES --- */
         .stApp {
-            background: #0F172A;
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
             font-family: 'Poppins', sans-serif;
         }
-        .stTitle {
-            font-size: 3.5em; color: #E2E8F0; font-weight: 700; text-align: left;
+        
+        /* Make all general text white and bold */
+        h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
         }
-        .stMarkdown p { font-size: 1.1rem; color: #94A3B8; }
-        [data-testid="stSidebar"] { background-color: #1E293B; border-right: 1px solid #334155; }
+        
+        /* Style for text inside input boxes and select boxes to be dark black and bold */
+        [data-testid="stTextInput"] input,
+        [data-testid="stNumberInput"] input,
+        .stSelectbox div[data-baseweb="select"] > div {
+            color: #000000 !important;
+            font-weight: 700 !important;
+        }
+        
+        /* --- COMPONENT-SPECIFIC STYLES --- */
+        .stTitle {
+            font-size: 3.5em !important; color: #E2E8F0 !important; font-weight: 700 !important;
+        }
+        .stMarkdown p { /* Keep descriptive text less prominent */
+             font-size: 1.1rem !important; color: #cdd6e3 !important; font-weight: 400 !important;
+        }
+        [data-testid="stSidebar"] { 
+            background-color: #1E293B; border-right: 1px solid #334155; 
+        }
         .stButton>button {
-            border-radius: 12px; border: 2px solid #38BDF8; color: #38BDF8;
-            background-color: transparent; font-weight: 600; transition: all 0.3s ease-in-out;
+            border-radius: 12px; border: 2px solid #38BDF8; color: #38BDF8 !important;
+            background-color: transparent; font-weight: 600 !important;
             padding: 12px 28px; width: 100%; font-size: 1.1em;
+            transition: all 0.3s ease-in-out;
         }
         .stButton>button:hover {
-            background-color: #38BDF8; color: #0F172A; transform: scale(1.05);
+            background-color: #38BDF8; color: #0F172A !important; transform: scale(1.05);
             box-shadow: 0px 5px 15px rgba(56, 189, 248, 0.4);
         }
         .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-        .stTabs [data-baseweb="tab"] { height: 50px; background-color: transparent; border-radius: 8px; color: #94A3B8; }
-        .stTabs [data-baseweb="tab--selected"] { background-color: #334155; color: #E2E8F0; }
+        .stTabs [data-baseweb="tab"] { height: 50px; background-color: transparent; border-radius: 8px; color: #94A3B8; font-weight: 600 !important; }
+        .stTabs [data-baseweb="tab--selected"] { background-color: #334155; color: #E2E8F0 !important; }
+        
         [data-testid="stMetric"] { background-color: #1E293B; padding: 20px; border-radius: 12px; }
-        [data-testid="stMetricLabel"] { font-size: 1.2em; color: #94A3B8; }
+        
         iframe { border-radius: 12px; }
     </style>
     """, unsafe_allow_html=True)
@@ -265,13 +257,23 @@ load_css()
 @st.cache_resource
 def load_resources():
     try:
+        # Use relative paths for portability
         model = joblib.load("football_injury_model.pkl")
         scaler = joblib.load("scaler.pkl")
-        explainer = shap.TreeExplainer(model)
+        # Ensure the model is compatible with SHAP's TreeExplainer
+        if hasattr(model, 'predict_proba'):
+             explainer = shap.TreeExplainer(model)
+        else:
+             # Handle cases for models without predict_proba if necessary
+             explainer = shap.KernelExplainer(model.predict, np.zeros((1, len(scaler.feature_names_in_))))
         return model, scaler, explainer
     except FileNotFoundError:
-        st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the correct directory.")
+        st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the same directory as your script.")
         st.stop()
+    except Exception as e:
+        st.error(f"An error occurred loading the resources: {e}")
+        st.stop()
+
 
 model, scaler, explainer = load_resources()
 expected_features = scaler.feature_names_in_
@@ -306,7 +308,7 @@ def get_recommendations(user_data, non_model_data, prediction_proba):
     return recs
 
 def create_history_chart():
-    if not st.session_state.history: return go.Figure().update_layout(title="No historical data yet.", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B')
+    if not st.session_state.history: return go.Figure().update_layout(title="No historical data yet.", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B', font_color='white')
     
     hist_df = pd.DataFrame(st.session_state.history)
     fig = go.Figure(go.Scatter(x=hist_df['timestamp'], y=hist_df['probability'], mode='lines+markers', marker_color='#38BDF8', line_color='#38BDF8'))
@@ -314,15 +316,18 @@ def create_history_chart():
     return fig
 
 @st.cache_data
-def get_shap_html(input_data):
+def get_shap_html(_input_df_for_cache):
     """Computes SHAP values and returns an HTML representation for Streamlit."""
-    shap_values = explainer.shap_values(input_data)
-    p = shap.force_plot(explainer.expected_value, shap_values[0,:], input_data.iloc[0,:], feature_names=expected_features, show=False)
-    # Wrap SHAP plot in a full HTML document for rendering
+    input_scaled = scaler.transform(_input_df_for_cache)
+    shap_values = explainer.shap_values(input_scaled)
+    
+    # Check if shap_values is a list (for classifiers)
+    shap_values_to_plot = shap_values[1] if isinstance(shap_values, list) else shap_values
+    
+    p = shap.force_plot(explainer.expected_value[1], shap_values_to_plot[0,:], _input_df_for_cache.iloc[0,:], feature_names=expected_features, show=False)
     shap_html = f"<head>{shap.getjs()}</head><body>{p.html()}</body>"
     return shap_html
 
-# Mock API call for player news
 def get_latest_news(player_name):
     if not player_name: return ["Enter a player name to get news."]
     return [
@@ -369,7 +374,6 @@ with main_col1:
     for item in news_items:
         st.info(item)
 
-
 with main_col2:
     if predict_button:
         with st.spinner('Analyzing data and generating report...'):
@@ -380,9 +384,8 @@ with main_col2:
                 prediction_proba = model.predict_proba(input_scaled)[0][1]
                 prediction = (prediction_proba > 0.5).astype(int)
 
-                # ----- Results Display -----
                 st.subheader(f"Risk Analysis for: {player_name if player_name else 'Unnamed Player'}")
-                tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Summary", "🧠 Model Insights", "📈 Historical Trends", "💡 Recommendations", "⚙️ Raw Data"])
+                tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Summary", "🧠 Model Insights", "📈 Historical Trends", "💡 Recommendations", "⚙️ Raw Data & Debug"])
 
                 with tab1:
                     col1, col2 = st.columns(2)
@@ -412,10 +415,19 @@ with main_col2:
                     for rec in recommendations: st.markdown(f"- {rec}")
 
                 with tab5:
-                    st.subheader("Raw Input Data")
-                    st.dataframe(input_df. T.rename(columns={0: 'Value'}), use_container_width=True)
+                    st.subheader("Raw Input Data (Before Scaling)")
+                    st.dataframe(input_df.T.rename(columns={0: 'Value'}), use_container_width=True)
+                    
+                    st.subheader("Scaled Input Data (Sent to Model)")
+                    scaled_df = pd.DataFrame(input_scaled, columns=expected_features)
+                    st.dataframe(scaled_df.T.rename(columns={0: 'Value'}), use_container_width=True)
+                    st.warning("""
+                    **DEBUGGING:** Check if the 'Scaled Input Data' values change when you alter inputs in the sidebar.
+                    - If these values **change** but the probability remains the same, the issue is with your saved model file (`football_injury_model.pkl`).
+                    - If these values **do not change**, there is an issue with the app logic or the scaler file (`scaler.pkl`).
+                    """)
 
             except Exception as e:
-                st.error(f"An error occurred: {e}")
+                st.error(f"An error occurred during prediction: {e}")
     else:
         st.info("Fill in the player's data on the left and click 'Predict' to see the full analysis dashboard.")
