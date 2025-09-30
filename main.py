@@ -199,27 +199,49 @@ def load_css():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
         
+        /* --- GLOBAL STYLES --- */
         .stApp {
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
             font-family: 'Poppins', sans-serif;
         }
         
+        /* General text white and bold */
         h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
             color: #FFFFFF !important;
             font-weight: 600 !important;
         }
-        
+
+        /* --- STYLED INPUT WIDGETS (COMPLEMENTARY COLORS) --- */
+        /* This makes the input box background dark and the text light */
         [data-testid="stTextInput"] input,
         [data-testid="stNumberInput"] input,
-        .stSelectbox div[data-baseweb="select"] > div {
-            color: #000000 !important;
-            font-weight: 700 !important;
+        .stSelectbox div[data-baseweb="select"] {
+            background-color: #1e293b !important; /* Dark background */
+            color: #E2E8F0 !important; /* Light text, high contrast */
+            border: 1px solid #334155 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
         }
         
+        /* Change placeholder text color */
+        ::placeholder {
+            color: #94A3B8 !important;
+            opacity: 1; /* Firefox */
+        }
+        
+        /* Add a blue accent border on focus */
+        [data-testid="stTextInput"] input:focus,
+        [data-testid="stNumberInput"] input:focus,
+        .stSelectbox div[data-baseweb="select"]:focus-within {
+            border-color: #38BDF8 !important;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.4) !important;
+        }
+        
+        /* --- OTHER COMPONENT-SPECIFIC STYLES --- */
         .stTitle {
             font-size: 3.5em !important; color: #E2E8F0 !important; font-weight: 700 !important;
         }
-        .stMarkdown p {
+        .stMarkdown p { /* Keep descriptive text a bit softer */
              font-size: 1.1rem !important; color: #cdd6e3 !important; font-weight: 400 !important;
         }
         [data-testid="stSidebar"] { 
@@ -305,7 +327,6 @@ def create_history_chart():
     fig.update_layout(title="Player Injury Risk Over Time", xaxis_title="Date", yaxis_title="Injury Probability", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B', font_color='white', yaxis=dict(range=[0,1]))
     return fig
 
-# ========== FIXED FUNCTION HERE ==========
 @st.cache_data
 def get_shap_html(_input_df_for_cache):
     """Computes SHAP values and returns an HTML representation for Streamlit."""
@@ -314,11 +335,9 @@ def get_shap_html(_input_df_for_cache):
     
     # Robustly handle different output formats of shap_values and expected_value
     if isinstance(shap_values, list) and len(shap_values) > 1:
-        # Typical case for binary classifiers: list of two arrays
         shap_values_for_plot = shap_values[1] 
         expected_value_for_plot = explainer.expected_value[1]
     else:
-        # Case for single output (regressors or some classifiers)
         shap_values_for_plot = shap_values
         expected_value_for_plot = explainer.expected_value
 
@@ -337,7 +356,6 @@ def get_shap_html(_input_df_for_cache):
     )
     shap_html = f"<head>{shap.getjs()}</head><body>{p.html()}</body>"
     return shap_html
-# =======================================
 
 def get_latest_news(player_name):
     if not player_name: return ["Enter a player name to get news."]
