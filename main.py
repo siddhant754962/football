@@ -159,7 +159,7 @@ def football_animation_component():
 
 
 # -----------------------------
-# Custom CSS for Advanced Styling (UPDATED FOR BLACK INPUT TEXT)
+# Custom CSS for Advanced Styling
 # -----------------------------
 def load_css():
     """Applies custom CSS to make all text pure white and bold, with exceptions for input fields."""
@@ -180,10 +180,10 @@ def load_css():
 
         /* --- EXCEPTIONS & SPECIFIC STYLES --- */
 
-        /* Exception 1: Text typed by the user into input boxes should be dark black for readability */
-        input[type="text"], input[type="number"] {
-            color: #111111 !important; /* Dark black text */
-            font-weight: normal !important; /* Non-bold for easier reading */
+        /* Exception 1: Text typed by the user should be dark black for readability. */
+        [data-testid="stTextInput"] input, [data-testid="stNumberInput"] input {
+            color: #111111 !important;
+            font-weight: normal !important;
         }
         
         /* Exception 2: Button text on hover should be dark for contrast */
