@@ -159,36 +159,45 @@ def football_animation_component():
 
 
 # -----------------------------
-# Custom CSS for Advanced Styling (UPDATED FOR PURE WHITE TEXT)
+# Custom CSS for Advanced Styling (UPDATED FOR BLACK INPUT TEXT)
 # -----------------------------
 def load_css():
-    """Applies custom CSS to make all text pure white and bold on a dark theme."""
+    """Applies custom CSS to make all text pure white and bold, with exceptions for input fields."""
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
-        /* Set background and default font for the entire app */
         .stApp {
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
             font-family: 'Poppins', sans-serif;
         }
 
-        /* --- THE UNIVERSAL FIX for "Faded" Colors --- */
-        /* This rule targets every element (*) within the app and forces its text to be pure white and bold. */
+        /* --- UNIVERSAL RULE for White/Bold Text --- */
         .stApp * {
             color: #FFFFFF !important;
             font-weight: 700 !important;
         }
 
         /* --- EXCEPTIONS & SPECIFIC STYLES --- */
-        /* We need to override the universal rule for specific cases where we DON'T want white text. */
 
-        /* Exception 1: Button text on hover should be dark for contrast */
+        /* Exception 1: Text typed by the user into input boxes should be dark black for readability */
+        input[type="text"], input[type="number"] {
+            color: #111111 !important; /* Dark black text */
+            font-weight: normal !important; /* Non-bold for easier reading */
+        }
+        
+        /* Exception 2: Button text on hover should be dark for contrast */
         .stButton>button:hover {
             color: #0F172A !important;
         }
 
-        /* Re-apply other structural styles that don't involve color */
+        /* Exception 3: Placeholder text in input fields is conventionally lighter. */
+        ::placeholder {
+            color: #A0A0A0 !important;
+            opacity: 1;
+        }
+
+        /* --- Other Structural Styles --- */
         .stTitle { font-size: 3.5em; }
         [data-testid="stSidebar"] { background-color: #1E293B; border-right: 1px solid #334155; }
 
@@ -213,13 +222,6 @@ def load_css():
 
         [data-testid="stMetric"] { background-color: #1E293B; padding: 20px; border-radius: 12px; }
         iframe { border-radius: 12px; }
-
-        /* Exception 2: Placeholder text in input fields is conventionally lighter. */
-        /* We'll make it a slightly less bright white to distinguish it. */
-        ::placeholder {
-            color: #A0A0A0 !important;
-            opacity: 1; /* Firefox */
-        }
     </style>
     """, unsafe_allow_html=True)
 
