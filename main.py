@@ -197,12 +197,13 @@ def football_animation_component():
 def load_css():
     st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        /* Maine Google Fonts ka import hata diya hai taaki app offline chal sake */
         
         /* --- GLOBAL STYLES --- */
         .stApp {
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
-            font-family: 'Poppins', sans-serif;
+            /* Ab app ek standard system font istemaal karega */
+            font-family: sans-serif;
         }
         
         /* General text white and bold */
@@ -211,25 +212,22 @@ def load_css():
             font-weight: 600 !important;
         }
 
-        /* --- STYLED INPUT WIDGETS (COMPLEMENTARY COLORS) --- */
-        /* This makes the input box background dark and the text light */
+        /* Styled input widgets */
         [data-testid="stTextInput"] input,
         [data-testid="stNumberInput"] input,
         .stSelectbox div[data-baseweb="select"] {
-            background-color: #1e293b !important; /* Dark background */
-            color: #E2E8F0 !important; /* Light text, high contrast */
+            background-color: #1e293b !important;
+            color: #E2E8F0 !important;
             border: 1px solid #334155 !important;
             border-radius: 8px !important;
             font-weight: 600 !important;
         }
         
-        /* Change placeholder text color */
         ::placeholder {
             color: #94A3B8 !important;
-            opacity: 1; /* Firefox */
+            opacity: 1;
         }
         
-        /* Add a blue accent border on focus */
         [data-testid="stTextInput"] input:focus,
         [data-testid="stNumberInput"] input:focus,
         .stSelectbox div[data-baseweb="select"]:focus-within {
@@ -241,7 +239,7 @@ def load_css():
         .stTitle {
             font-size: 3.5em !important; color: #E2E8F0 !important; font-weight: 700 !important;
         }
-        .stMarkdown p { /* Keep descriptive text a bit softer */
+        .stMarkdown p {
              font-size: 1.1rem !important; color: #cdd6e3 !important; font-weight: 400 !important;
         }
         [data-testid="stSidebar"] { 
@@ -280,10 +278,10 @@ def load_resources():
         explainer = shap.TreeExplainer(model)
         return model, scaler, explainer
     except FileNotFoundError:
-        st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the same directory as your script.")
+        st.error("Model ya scaler file nahi mili. Kripya sunishchit karein ki 'football_injury_model.pkl' aur 'scaler.pkl' aapki script ke saath usi folder mein hain.")
         st.stop()
     except Exception as e:
-        st.error(f"An error occurred loading the resources: {e}")
+        st.error(f"Resources load karte samay error aaya: {e}")
         st.stop()
 
 
@@ -333,7 +331,6 @@ def get_shap_html(_input_df_for_cache):
     input_scaled = scaler.transform(_input_df_for_cache)
     shap_values = explainer.shap_values(input_scaled)
     
-    # Robustly handle different output formats of shap_values and expected_value
     if isinstance(shap_values, list) and len(shap_values) > 1:
         shap_values_for_plot = shap_values[1] 
         expected_value_for_plot = explainer.expected_value[1]
@@ -341,7 +338,6 @@ def get_shap_html(_input_df_for_cache):
         shap_values_for_plot = shap_values
         expected_value_for_plot = explainer.expected_value
 
-    # Ensure we pass a 1D array to the force_plot
     if hasattr(shap_values_for_plot, 'ndim') and shap_values_for_plot.ndim > 1:
         shap_values_row = shap_values_for_plot[0, :]
     else:
@@ -455,6 +451,6 @@ with main_col2:
                     """)
 
             except Exception as e:
-                st.error(f"An error occurred during prediction: {e}")
+                st.error(f"Prediction ke dauraan error aaya: {e}")
     else:
-        st.info("Fill in the player's data on the left and click 'Predict' to see the full analysis dashboard.")
+        st.info("Player ka data left sidebar mein bharein aur 'Predict' par click karein.")
