@@ -45,45 +45,86 @@ def football_animation_component():
     <script>
         const canvas = document.getElementById('footballAnimation');
         const ctx = canvas.getContext('2d');
+
+        // Set canvas size to its container's size
         function resizeCanvas() {
             let parent = canvas.parentElement;
             canvas.width = parent.clientWidth;
-            canvas.height = 400;
+            canvas.height = 400; // Fixed height for consistency
         }
+        
         resizeCanvas();
+
         const groundLevel = canvas.height - 40;
-        let ball = { x: 85, y: groundLevel - 12, radius: 10, dx: 0, dy: 0, gravity: 0.3, rotation: 0, isKicked: false };
-        let player = { x: 50, y: groundLevel, width: 20, height: 50, speed: 1.5, runFrame: 0, isKicking: false };
+
+        // Ball properties
+        let ball = {
+            x: 85,
+            y: groundLevel - 12,
+            radius: 10,
+            dx: 0,
+            dy: 0,
+            gravity: 0.3,
+            rotation: 0,
+            isKicked: false
+        };
+
+        // Player properties
+        let player = {
+            x: 50,
+            y: groundLevel,
+            width: 20,
+            height: 50,
+            speed: 1.5,
+            runFrame: 0,
+            isKicking: false
+        };
+
         function drawField() {
-            ctx.fillStyle = '#228B22';
+            ctx.fillStyle = '#228B22'; // ForestGreen
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#87CEEB';
+            ctx.fillStyle = '#87CEEB'; // SkyBlue
             ctx.fillRect(0, 0, canvas.width, groundLevel - 20);
             ctx.fillStyle = '#228B22';
             ctx.fillRect(0, groundLevel - 20, canvas.width, canvas.height - 20);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, groundLevel - 20);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
         }
+
         function drawPlayer() {
             const p = player;
             ctx.strokeStyle = '#FFFFFF';
             ctx.lineWidth = 3;
+
+            // Head
             ctx.beginPath();
             ctx.arc(p.x, p.y - p.height, 8, 0, Math.PI * 2);
             ctx.fillStyle = '#FFFFFF';
             ctx.fill();
+            
+            // Body
             ctx.beginPath();
             ctx.moveTo(p.x, p.y - p.height + 8);
             ctx.lineTo(p.x, p.y - 15);
             ctx.stroke();
+
+            // Kicking animation
             if (p.isKicking) {
+                // Kicking leg forward
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
                 ctx.lineTo(p.x + 15, p.y - 10);
                 ctx.stroke();
+                // Other leg back
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
                 ctx.lineTo(p.x - 10, p.y - 2);
                 ctx.stroke();
-            } else {
+            } else { // Running animation
                 let legAngle = Math.sin(p.runFrame * 0.3) * 0.6;
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y - 15);
@@ -93,9 +134,12 @@ def football_animation_component():
                 ctx.stroke();
             }
         }
+        
         function updatePlayerAndBall() {
             player.x += player.speed;
             player.runFrame += 1;
+
+            // Logic for kicking
             if (player.x > ball.x - 30 && !ball.isKicked) {
                 player.isKicking = true;
                 ball.isKicked = true;
@@ -104,25 +148,33 @@ def football_animation_component():
             } else {
                 player.isKicking = false;
             }
+            
+            // Update ball position if kicked
             if (ball.isKicked) {
                 ball.dy += ball.gravity;
                 ball.x += ball.dx;
                 ball.y += ball.dy;
                 ball.rotation += ball.dx * 0.1;
+
+                // Bounce
                 if (ball.y + ball.radius > groundLevel) {
                     ball.y = groundLevel - ball.radius;
                     ball.dy *= -0.6;
                     ball.dx *= 0.8;
                 }
             } else {
-                ball.x = player.x + 35;
-                ball.y = groundLevel - ball.radius;
+                 ball.x = player.x + 35;
+                 ball.y = groundLevel - ball.radius;
             }
+            
+            // Reset loop
             if (player.x > canvas.width + player.width) {
                 player.x = -player.width;
                 ball.isKicked = false;
             }
         }
+
+
         function drawBall() {
             ctx.save();
             ctx.translate(ball.x, ball.y);
@@ -141,6 +193,7 @@ def football_animation_component():
             ctx.closePath();
             ctx.restore();
         }
+
         function animate() {
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -149,7 +202,17 @@ def football_animation_component():
             drawPlayer();
             drawBall();
         }
-        window.addEventListener('resize', () => { resizeCanvas(); player.x = 50; ball.isKicked = false; });
+        
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCanvas();
+                player.x = 50;
+                ball.isKicked = false;
+            }, 100);
+        });
+
         animate();
     </script>
     </body>
@@ -162,65 +225,34 @@ def football_animation_component():
 # Custom CSS for Advanced Styling
 # -----------------------------
 def load_css():
-    """Applies custom CSS to make all text pure white and bold, with exceptions for input fields."""
     st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
         .stApp {
+            background: #0F172A;
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
             font-family: 'Poppins', sans-serif;
         }
-
-        /* --- UNIVERSAL RULE for White/Bold Text --- */
-        .stApp * {
-            color: #FFFFFF !important;
-            font-weight: 700 !important;
+        .stTitle {
+            font-size: 3.5em; color: #E2E8F0; font-weight: 700; text-align: left;
         }
-
-        /* --- EXCEPTIONS & SPECIFIC STYLES --- */
-
-        /* Exception 1: Text typed by the user should be dark black for readability. */
-        [data-testid="stTextInput"] input, [data-testid="stNumberInput"] input {
-            color: #111111 !important;
-            font-weight: normal !important;
-        }
-        
-        /* Exception 2: Button text on hover should be dark for contrast */
-        .stButton>button:hover {
-            color: #0F172A !important;
-        }
-
-        /* Exception 3: Placeholder text in input fields is conventionally lighter. */
-        ::placeholder {
-            color: #A0A0A0 !important;
-            opacity: 1;
-        }
-
-        /* --- Other Structural Styles --- */
-        .stTitle { font-size: 3.5em; }
+        .stMarkdown p { font-size: 1.1rem; color: #94A3B8; }
         [data-testid="stSidebar"] { background-color: #1E293B; border-right: 1px solid #334155; }
-
         .stButton>button {
-            border-radius: 12px;
-            border: 2px solid #38BDF8;
-            background-color: transparent;
-            transition: all 0.3s ease-in-out;
-            padding: 12px 28px;
-            width: 100%;
-            font-size: 1.1em;
+            border-radius: 12px; border: 2px solid #38BDF8; color: #38BDF8;
+            background-color: transparent; font-weight: 600; transition: all 0.3s ease-in-out;
+            padding: 12px 28px; width: 100%; font-size: 1.1em;
         }
         .stButton>button:hover {
-            background-color: #38BDF8;
-            transform: scale(1.05);
+            background-color: #38BDF8; color: #0F172A; transform: scale(1.05);
             box-shadow: 0px 5px 15px rgba(56, 189, 248, 0.4);
         }
-
         .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-        .stTabs [data-baseweb="tab"] { height: 50px; background-color: transparent; border-radius: 8px; }
-        .stTabs [data-baseweb="tab--selected"] { background-color: #334155; }
-
+        .stTabs [data-baseweb="tab"] { height: 50px; background-color: transparent; border-radius: 8px; color: #94A3B8; }
+        .stTabs [data-baseweb="tab--selected"] { background-color: #334155; color: #E2E8F0; }
         [data-testid="stMetric"] { background-color: #1E293B; padding: 20px; border-radius: 12px; }
+        [data-testid="stMetricLabel"] { font-size: 1.2em; color: #94A3B8; }
         iframe { border-radius: 12px; }
     </style>
     """, unsafe_allow_html=True)
@@ -238,7 +270,7 @@ def load_resources():
         explainer = shap.TreeExplainer(model)
         return model, scaler, explainer
     except FileNotFoundError:
-        st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the same directory as your script.")
+        st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the correct directory.")
         st.stop()
 
 model, scaler, explainer = load_resources()
@@ -274,7 +306,7 @@ def get_recommendations(user_data, non_model_data, prediction_proba):
     return recs
 
 def create_history_chart():
-    if not st.session_state.history: return go.Figure().update_layout(title="No historical data yet.", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B', font_color='white')
+    if not st.session_state.history: return go.Figure().update_layout(title="No historical data yet.", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B')
     
     hist_df = pd.DataFrame(st.session_state.history)
     fig = go.Figure(go.Scatter(x=hist_df['timestamp'], y=hist_df['probability'], mode='lines+markers', marker_color='#38BDF8', line_color='#38BDF8'))
@@ -286,9 +318,11 @@ def get_shap_html(input_data):
     """Computes SHAP values and returns an HTML representation for Streamlit."""
     shap_values = explainer.shap_values(input_data)
     p = shap.force_plot(explainer.expected_value, shap_values[0,:], input_data.iloc[0,:], feature_names=expected_features, show=False)
+    # Wrap SHAP plot in a full HTML document for rendering
     shap_html = f"<head>{shap.getjs()}</head><body>{p.html()}</body>"
     return shap_html
 
+# Mock API call for player news
 def get_latest_news(player_name):
     if not player_name: return ["Enter a player name to get news."]
     return [
@@ -339,13 +373,14 @@ with main_col1:
 with main_col2:
     if predict_button:
         with st.spinner('Analyzing data and generating report...'):
-            time.sleep(1.5)
+            time.sleep(1.5) # Simulate processing time
             try:
                 input_df = pd.DataFrame([user_input])[expected_features]
                 input_scaled = scaler.transform(input_df)
                 prediction_proba = model.predict_proba(input_scaled)[0][1]
                 prediction = (prediction_proba > 0.5).astype(int)
 
+                # ----- Results Display -----
                 st.subheader(f"Risk Analysis for: {player_name if player_name else 'Unnamed Player'}")
                 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Summary", "🧠 Model Insights", "📈 Historical Trends", "💡 Recommendations", "⚙️ Raw Data"])
 
@@ -378,7 +413,7 @@ with main_col2:
 
                 with tab5:
                     st.subheader("Raw Input Data")
-                    st.dataframe(input_df.T.rename(columns={0: 'Value'}), use_container_width=True)
+                    st.dataframe(input_df. T.rename(columns={0: 'Value'}), use_container_width=True)
 
             except Exception as e:
                 st.error(f"An error occurred: {e}")
