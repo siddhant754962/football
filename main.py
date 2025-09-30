@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import shap
 import time
 from datetime import datetime
-import numpy as np # Import numpy
+import numpy as np
 
 # -----------------------------
 # Page Configuration
@@ -199,19 +199,16 @@ def load_css():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
         
-        /* --- GLOBAL STYLES --- */
         .stApp {
             background: linear-gradient(to right top, #0f172a, #1e293b, #334155);
             font-family: 'Poppins', sans-serif;
         }
         
-        /* Make all general text white and bold */
         h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
             color: #FFFFFF !important;
             font-weight: 600 !important;
         }
         
-        /* Style for text inside input boxes and select boxes to be dark black and bold */
         [data-testid="stTextInput"] input,
         [data-testid="stNumberInput"] input,
         .stSelectbox div[data-baseweb="select"] > div {
@@ -219,11 +216,10 @@ def load_css():
             font-weight: 700 !important;
         }
         
-        /* --- COMPONENT-SPECIFIC STYLES --- */
         .stTitle {
             font-size: 3.5em !important; color: #E2E8F0 !important; font-weight: 700 !important;
         }
-        .stMarkdown p { /* Keep descriptive text less prominent */
+        .stMarkdown p {
              font-size: 1.1rem !important; color: #cdd6e3 !important; font-weight: 400 !important;
         }
         [data-testid="stSidebar"] { 
@@ -257,15 +253,9 @@ load_css()
 @st.cache_resource
 def load_resources():
     try:
-        # Use relative paths for portability
         model = joblib.load("football_injury_model.pkl")
         scaler = joblib.load("scaler.pkl")
-        # Ensure the model is compatible with SHAP's TreeExplainer
-        if hasattr(model, 'predict_proba'):
-             explainer = shap.TreeExplainer(model)
-        else:
-             # Handle cases for models without predict_proba if necessary
-             explainer = shap.KernelExplainer(model.predict, np.zeros((1, len(scaler.feature_names_in_))))
+        explainer = shap.TreeExplainer(model)
         return model, scaler, explainer
     except FileNotFoundError:
         st.error("Model or scaler file not found. Please ensure 'football_injury_model.pkl' and 'scaler.pkl' are in the same directory as your script.")
@@ -315,18 +305,39 @@ def create_history_chart():
     fig.update_layout(title="Player Injury Risk Over Time", xaxis_title="Date", yaxis_title="Injury Probability", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='#1E293B', font_color='white', yaxis=dict(range=[0,1]))
     return fig
 
+# ========== FIXED FUNCTION HERE ==========
 @st.cache_data
 def get_shap_html(_input_df_for_cache):
     """Computes SHAP values and returns an HTML representation for Streamlit."""
     input_scaled = scaler.transform(_input_df_for_cache)
     shap_values = explainer.shap_values(input_scaled)
     
-    # Check if shap_values is a list (for classifiers)
-    shap_values_to_plot = shap_values[1] if isinstance(shap_values, list) else shap_values
-    
-    p = shap.force_plot(explainer.expected_value[1], shap_values_to_plot[0,:], _input_df_for_cache.iloc[0,:], feature_names=expected_features, show=False)
+    # Robustly handle different output formats of shap_values and expected_value
+    if isinstance(shap_values, list) and len(shap_values) > 1:
+        # Typical case for binary classifiers: list of two arrays
+        shap_values_for_plot = shap_values[1] 
+        expected_value_for_plot = explainer.expected_value[1]
+    else:
+        # Case for single output (regressors or some classifiers)
+        shap_values_for_plot = shap_values
+        expected_value_for_plot = explainer.expected_value
+
+    # Ensure we pass a 1D array to the force_plot
+    if hasattr(shap_values_for_plot, 'ndim') and shap_values_for_plot.ndim > 1:
+        shap_values_row = shap_values_for_plot[0, :]
+    else:
+        shap_values_row = shap_values_for_plot
+
+    p = shap.force_plot(
+        expected_value_for_plot, 
+        shap_values_row, 
+        _input_df_for_cache.iloc[0,:], 
+        feature_names=expected_features, 
+        show=False
+    )
     shap_html = f"<head>{shap.getjs()}</head><body>{p.html()}</body>"
     return shap_html
+# =======================================
 
 def get_latest_news(player_name):
     if not player_name: return ["Enter a player name to get news."]
@@ -377,7 +388,7 @@ with main_col1:
 with main_col2:
     if predict_button:
         with st.spinner('Analyzing data and generating report...'):
-            time.sleep(1.5) # Simulate processing time
+            time.sleep(1.5)
             try:
                 input_df = pd.DataFrame([user_input])[expected_features]
                 input_scaled = scaler.transform(input_df)
@@ -422,9 +433,7 @@ with main_col2:
                     scaled_df = pd.DataFrame(input_scaled, columns=expected_features)
                     st.dataframe(scaled_df.T.rename(columns={0: 'Value'}), use_container_width=True)
                     st.warning("""
-                    **DEBUGGING:** Check if the 'Scaled Input Data' values change when you alter inputs in the sidebar.
-                    - If these values **change** but the probability remains the same, the issue is with your saved model file (`football_injury_model.pkl`).
-                    - If these values **do not change**, there is an issue with the app logic or the scaler file (`scaler.pkl`).
+                    **DEBUGGING:** Check if the 'Scaled Input Data' values change when you alter inputs. If they do but the probability doesn't, the issue is likely your model file.
                     """)
 
             except Exception as e:
